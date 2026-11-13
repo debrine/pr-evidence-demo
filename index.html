@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notes</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 32rem;
+        margin: 3rem auto;
+        padding: 0 1rem;
+        color: #1f2328;
+      }
+      form {
+        display: flex;
+        gap: 0.5rem;
+      }
+      input {
+        flex: 1;
+        padding: 0.5rem;
+        font-size: 1rem;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+      }
+      ul {
+        padding-left: 1.25rem;
+      }
+      li {
+        margin: 0.4rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Notes</h1>
+    <form id="note-form">
+      <input id="note-text" aria-label="Note" placeholder="Write a note" autocomplete="off" />
+      <button id="save-button" type="submit">Save</button>
+    </form>
+    <h2>Saved notes (<span id="note-count">0</span>)</h2>
+    <ul id="note-list"></ul>
+
+    <script>
+      const form = document.getElementById("note-form");
+      const textInput = document.getElementById("note-text");
+      const noteList = document.getElementById("note-list");
+      const noteCount = document.getElementById("note-count");
+
+      function renderNotes(notes) {
+        noteList.replaceChildren(
+          ...notes.map((note) => {
+            const item = document.createElement("li");
+            item.textContent = note.text;
+            return item;
+          }),
+        );
+        noteCount.textContent = notes.length;
+      }
+
+      async function loadNotes() {
+        const response = await fetch("/notes");
+        renderNotes(await response.json());
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = textInput.value.trim();
+        if (!text) return;
+        await fetch("/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        textInput.value = "";
+        await loadNotes();
+      });
+
+      loadNotes();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,2 @@
+start: node server.js
+readyUrl: http://localhost:3000
