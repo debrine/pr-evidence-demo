@@ -45,6 +45,7 @@
     <script>
       const form = document.getElementById("note-form");
       const textInput = document.getElementById("note-text");
+      const saveButton = document.getElementById("save-button");
       const noteList = document.getElementById("note-list");
       const noteCount = document.getElementById("note-count");
 
@@ -68,13 +69,21 @@
         event.preventDefault();
         const text = textInput.value.trim();
         if (!text) return;
-        await fetch("/notes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
-        });
-        textInput.value = "";
-        await loadNotes();
+        // Disable Save until this save finishes, so a second click can't send the note again.
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving…";
+        try {
+          await fetch("/notes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          textInput.value = "";
+          await loadNotes();
+        } finally {
+          saveButton.disabled = false;
+          saveButton.textContent = "Save";
+        }
       });
 
       loadNotes();
